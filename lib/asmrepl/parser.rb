@@ -18,9 +18,9 @@ module ASMREPL
 
     def register_or_insn str
       if @instructions.include? str.upcase
-        [:instruction, str]
+        [:instruction, Fisk::Instructions.const_get(str.upcase)]
       else
-        [:register, str]
+        [:register, Fisk::Registers.const_get(str.upcase)]
       end
     end
 
@@ -32,7 +32,27 @@ module ASMREPL
       while tok = @tokens.shift
         next if tok[1] == :on_sp
         m = tok && [tok[1], tok[2]]
-        return m
+        case m
+        in [:on_ident, ident]
+          return case ident
+          when "qword" then [:qword, ident]
+          when "word"  then [:word, ident]
+          when "dword" then [:dword, ident]
+          when "byte"  then [:byte, ident]
+          when "ptr"   then [:ptr, ident]
+          else
+            m
+          end
+        in [:on_op, ident]
+          return case ident
+          when "+" then [:plus, ident]
+          when "-" then [:minus, ident]
+          else
+            m
+          end
+        else
+          return m
+        end
       end
     end
   end

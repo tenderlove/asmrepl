@@ -4,10 +4,12 @@ module ASMREPL
       fisk = Fisk.new
 
       case ast
-      in [:command, [:instruction, m], [:register, r], [:int, n]]
-        insn = Fisk::Instructions.const_get(m.upcase)
-        reg = Fisk::Registers.const_get(r.upcase)
-        fisk.gen_with_insn insn, [reg, fisk.imm(n)]
+      in [:command, [:instruction, insn], [:register, r], [:int, n]]
+        fisk.gen_with_insn insn, [r, fisk.imm(n)]
+      in [:command, [:instruction, insn], [:register, r], [:register, r2]]
+        fisk.gen_with_insn insn, [r, r2]
+      in [:command, [:instruction, insn], [:register, r], [:memory, mem]]
+        fisk.gen_with_insn insn, [r, mem]
       else
       end
 
