@@ -24,6 +24,10 @@ module ASMREPL
       [:command, mnemonic, arg1]
     end
 
+    def new_single mnemonic
+      [:command, mnemonic]
+    end
+
     def next_token
       while tok = @tokens.shift
         next if tok[1] == :on_sp
@@ -37,12 +41,18 @@ module ASMREPL
           when "byte"  then [:byte, ident]
           when "ptr"   then [:ptr, ident]
           else
-            if @instructions.include?(ident.upcase)
-              [:on_instruction, Fisk::Instructions.const_get(ident.upcase)]
-            elsif @registers.include?(ident.upcase)
-              [:on_register, Fisk::Registers.const_get(ident.upcase)]
+            if ident.upcase == "RIP"
+              [:on_rip, ident]
+            elsif ident.upcase == "MOVABS"
+              [:on_instruction, Fisk::Instructions::MOV]
             else
-              m
+              if @instructions.include?(ident.upcase)
+                [:on_instruction, Fisk::Instructions.const_get(ident.upcase)]
+              elsif @registers.include?(ident.upcase)
+                [:on_register, Fisk::Registers.const_get(ident.upcase)]
+              else
+                m
+              end
             end
           end
         in [:on_op, ident]

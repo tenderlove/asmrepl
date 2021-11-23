@@ -18,9 +18,21 @@ module ASMREPL
         fisk.gen_with_insn insn, [r, r2]
       in [:command, [:instruction, insn], [:register, r], [:memory, mem]]
         fisk.gen_with_insn insn, [r, mem]
+      in [:command, [:instruction, insn], [:memory, a], [:register, b]]
+        fisk.gen_with_insn insn, [a, b]
       in [:command, [:instruction, insn], [:int, n]]
         fisk.gen_with_insn insn, [fisk.imm(n)]
+      in [:command, [:instruction, insn], [:register, n]]
+        fisk.gen_with_insn insn, [n]
+      in [:command, [:instruction, insn], [:memory, n]]
+        fisk.gen_with_insn insn, [n]
+      in [:command, [:instruction, insn], [:memory, n], [:int, b]]
+        fisk.gen_with_insn insn, [n, fisk.imm(b)]
+      in [:command, [:instruction, insn]]
+        fisk.gen_with_insn insn, []
       else
+        p ast
+        raise "Unknown"
       end
 
       fisk.to_binary

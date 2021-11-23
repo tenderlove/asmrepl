@@ -10,68 +10,83 @@ module ASMREPL
 ##### State transition tables begin ###
 
 racc_action_table = [
-    14,     8,     8,     3,    16,    26,    18,    17,    19,    32,
-     4,     7,     7,    27,    28,     9,    10,    33,    34,     7,
-    21,    22,    23,    24,    25,     7,    30,    31,    35,    36,
-    37,    38,    39,    40 ]
+    12,     3,     9,     4,    14,    18,    16,    15,    17,    10,
+    11,    12,     8,     9,    19,    14,    20,    16,    15,    17,
+    10,    11,     9,     8,    21,    35,     9,    37,     9,    10,
+    11,    22,     8,    10,    11,    10,    11,    42,     9,     8,
+    24,    25,    26,    27,    28,    10,    11,    29,     8,    40,
+    41,    44 ]
 
 racc_action_check = [
-    10,     2,    10,     0,    10,    20,    10,    10,    10,    29,
-     1,     2,    10,    20,    20,     4,     5,    29,    29,    14,
-    15,    16,    17,    18,    19,    21,    27,    28,    30,    31,
-    33,    34,    37,    38 ]
+     2,     0,     2,     1,     2,     4,     2,     2,     2,     2,
+     2,    19,     2,    19,     5,    19,     6,    19,    19,    19,
+    19,    19,    20,    19,    10,    23,    23,    24,    24,    20,
+    20,    11,    20,    23,    23,    24,    24,    39,    39,    12,
+    12,    13,    14,    15,    16,    39,    39,    17,    25,    36,
+    38,    43 ]
 
 racc_action_pointer = [
-   -10,    10,    -3,   nil,    15,    11,   nil,   nil,   nil,   nil,
-    -2,   nil,   nil,   nil,     5,    18,    14,    15,    16,    17,
-     2,    11,   nil,   nil,   nil,   nil,   nil,    22,    23,     6,
-    25,    26,   nil,    26,    27,   nil,   nil,    29,    30,   nil,
-   nil ]
+   -12,     3,    -2,   nil,     5,     9,    11,   nil,   nil,   nil,
+    20,    27,    25,    39,    35,    36,    37,    40,   nil,     9,
+    18,   nil,   nil,    22,    24,    34,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,    46,   nil,    47,    34,
+   nil,   nil,   nil,    48,   nil ]
 
 racc_action_default = [
-   -18,   -18,   -18,    -5,   -18,   -18,    -4,    -6,    -7,    41,
-   -18,    -1,    -2,    -3,   -18,   -18,   -18,   -18,   -18,   -18,
-   -18,   -18,   -14,   -15,   -16,   -17,    -8,   -18,   -18,   -18,
-   -18,   -18,   -11,   -18,   -18,    -9,   -10,   -18,   -18,   -12,
-   -13 ]
+   -25,   -25,    -9,   -10,   -25,    -6,    -7,    -8,   -11,   -12,
+   -25,   -25,   -25,   -25,   -25,   -25,   -25,   -25,    45,   -25,
+   -25,   -13,   -14,   -25,   -25,   -25,   -21,   -22,   -23,   -24,
+    -1,    -2,    -3,    -4,    -5,   -15,   -25,   -16,   -25,   -25,
+   -18,   -17,   -19,   -25,   -20 ]
 
 racc_goto_table = [
-     5,     6,     1,     2,    13,    15,   nil,   nil,    12,    11,
-   nil,   nil,    20,   nil,   nil,   nil,   nil,   nil,   nil,    29 ]
+     7,     1,     5,     2,   nil,   nil,     6,   nil,   nil,   nil,
+   nil,   nil,    23,   nil,   nil,   nil,   nil,    30,    34,    31,
+    33,    36,    38,    32,   nil,    39,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,    43 ]
 
 racc_goto_check = [
-     3,     4,     1,     2,     5,     6,   nil,   nil,     3,     4,
-   nil,   nil,     3,   nil,   nil,   nil,   nil,   nil,   nil,     3 ]
+     4,     1,     3,     2,   nil,   nil,     5,   nil,   nil,   nil,
+   nil,   nil,     3,   nil,   nil,   nil,   nil,     4,     4,     3,
+     3,     4,     4,     5,   nil,     3,   nil,   nil,   nil,   nil,
+   nil,   nil,   nil,   nil,   nil,   nil,   nil,     4 ]
 
 racc_goto_pointer = [
-   nil,     2,     3,    -2,    -1,    -6,    -5 ]
+   nil,     1,     3,     0,    -2,     4,   nil ]
 
 racc_goto_default = [
-   nil,   nil,   nil,   nil,   nil,   nil,   nil ]
+   nil,   nil,   nil,   nil,   nil,   nil,    13 ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  4, 16, :_reduce_1,
-  4, 16, :_reduce_2,
-  4, 16, :_reduce_3,
-  2, 16, :_reduce_4,
-  1, 17, :_reduce_5,
-  1, 18, :_reduce_6,
-  1, 19, :_reduce_7,
-  3, 20, :_reduce_8,
-  5, 20, :_reduce_9,
-  5, 20, :_reduce_10,
-  4, 20, :_reduce_11,
-  6, 20, :_reduce_12,
-  6, 20, :_reduce_13,
-  2, 21, :_reduce_14,
-  2, 21, :_reduce_15,
-  2, 21, :_reduce_16,
-  2, 21, :_reduce_17 ]
+  4, 17, :_reduce_1,
+  4, 17, :_reduce_2,
+  4, 17, :_reduce_3,
+  4, 17, :_reduce_4,
+  4, 17, :_reduce_5,
+  2, 17, :_reduce_6,
+  2, 17, :_reduce_7,
+  2, 17, :_reduce_8,
+  1, 17, :_reduce_9,
+  1, 18, :_reduce_10,
+  1, 19, :_reduce_11,
+  1, 20, :_reduce_12,
+  2, 20, :_reduce_13,
+  2, 20, :_reduce_14,
+  3, 21, :_reduce_15,
+  3, 21, :_reduce_16,
+  4, 21, :_reduce_17,
+  4, 21, :_reduce_18,
+  4, 21, :_reduce_19,
+  5, 21, :_reduce_20,
+  2, 22, :_reduce_21,
+  2, 22, :_reduce_22,
+  2, 22, :_reduce_23,
+  2, 22, :_reduce_24 ]
 
-racc_reduce_n = 18
+racc_reduce_n = 25
 
-racc_shift_n = 41
+racc_shift_n = 45
 
 racc_token_table = {
   false => 0,
@@ -88,9 +103,10 @@ racc_token_table = {
   :plus => 11,
   :minus => 12,
   :on_instruction => 13,
-  :on_register => 14 }
+  :on_register => 14,
+  :on_rip => 15 }
 
-racc_nt_base = 15
+racc_nt_base = 16
 
 racc_use_result_var = true
 
@@ -126,6 +142,7 @@ Racc_token_to_s_table = [
   "minus",
   "on_instruction",
   "on_register",
+  "on_rip",
   "$start",
   "command",
   "instruction",
@@ -156,71 +173,106 @@ def _reduce_3(val, _values, result)
 end
 
 def _reduce_4(val, _values, result)
- result = new_tuple(val[0], val[1])
+ result = new_command(val[0], val[1], val[3])
     result
 end
 
 def _reduce_5(val, _values, result)
- result = [:instruction, val[0]]
+ result = new_command(val[0], val[1], val[3])
     result
 end
 
 def _reduce_6(val, _values, result)
- result = [:register, val[0]]
+ result = new_tuple(val[0], val[1])
     result
 end
 
 def _reduce_7(val, _values, result)
- result = [:int, Integer(val[0])]
+ result = new_tuple(val[0], val[1])
     result
 end
 
 def _reduce_8(val, _values, result)
- result = [:memory, Fisk::M64.new(val[1].last, 0)]
+ result = new_tuple(val[0], val[1])
     result
 end
 
 def _reduce_9(val, _values, result)
- result = [:memory, Fisk::M64.new(val[1].last, Integer(val[3]))]
+ result = new_single(val[0])
     result
 end
 
 def _reduce_10(val, _values, result)
- result = [:memory, Fisk::M64.new(val[1].last, -Integer(val[3]))]
+ result = [:instruction, val[0]]
     result
 end
 
 def _reduce_11(val, _values, result)
- result = [:memory, val[0].new(val[2].last, 0)]
+ result = [:register, val[0]]
     result
 end
 
 def _reduce_12(val, _values, result)
- result = [:memory, val[0].new(val[2].last, Integer(val[4]))]
+ result = [:int, Integer(val[0])]
     result
 end
 
 def _reduce_13(val, _values, result)
- result = [:memory, val[0].new(val[2].last, -Integer(val[4]))]
+ result = [:int, Integer(val[1])]
     result
 end
 
 def _reduce_14(val, _values, result)
- result = Fisk::M64
+ result = [:int, -Integer(val[1])]
     result
 end
 
 def _reduce_15(val, _values, result)
- result = Fisk::M32
+ result = [:memory, Fisk::M64.new(val[1].last, 0)]
     result
 end
 
 def _reduce_16(val, _values, result)
- result = Fisk::M16
+ result = [:memory, Fisk::Registers::Rip.new(0)]
     result
 end
 
 def _reduce_17(val, _values, result)
+ result = [:memory, Fisk::Registers::Rip.new(val[2].last)]
+    result
+end
+
+def _reduce_18(val, _values, result)
+ result = [:memory, Fisk::M64.new(val[1].last, val[2].last)]
+    result
+end
+
+def _reduce_19(val, _values, result)
+ result = [:memory, val[0].new(val[2].last, 0)]
+    result
+end
+
+def _reduce_20(val, _values, result)
+ result = [:memory, val[0].new(val[2].last, val[3].last)]
+    result
+end
+
+def _reduce_21(val, _values, result)
+ result = Fisk::M64
+    result
+end
+
+def _reduce_22(val, _values, result)
+ result = Fisk::M32
+    result
+end
+
+def _reduce_23(val, _values, result)
+ result = Fisk::M16
+    result
+end
+
+def _reduce_24(val, _values, result)
  result = Fisk::M8
     result
 end

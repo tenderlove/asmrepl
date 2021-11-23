@@ -7,6 +7,39 @@ class ParserTest < ASMREPL::Test
     @assembler = ASMREPL::Assembler.new
   end
 
+  def test_negative
+    assert_round_trip "test qword ptr [r15], -9"
+  end
+
+  def test_mem_lhs
+    asm = disasm_for "mov [r15], r9"
+    assert_equal "mov qword ptr [r15], r9", asm
+    assert_round_trip "mov qword ptr [r15], r9"
+  end
+
+  def test_inc
+    assert_round_trip "inc r10"
+    assert_round_trip "inc qword ptr [r10]"
+    assert_round_trip "inc qword ptr [r10 + 8]"
+  end
+
+  def test_movabs
+    assert_round_trip "movabs r10, 0x6000014b1ae0"
+  end
+
+  def test_ret
+    assert_round_trip "ret "
+  end
+
+  def test_lea_rip
+    assert_round_trip "lea rax, [rip]"
+    assert_round_trip "lea rax, [rip + 9]"
+  end
+
+  def test_push_reg
+    assert_round_trip "push r13"
+  end
+
   def test_int_4
     assert_round_trip "int 4"
   end
