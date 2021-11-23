@@ -20,6 +20,10 @@ module ASMREPL
       [:command, mnemonic, arg1, arg2]
     end
 
+    def new_tuple mnemonic, arg1
+      [:command, mnemonic, arg1]
+    end
+
     def next_token
       while tok = @tokens.shift
         next if tok[1] == :on_sp

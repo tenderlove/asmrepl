@@ -7,6 +7,14 @@ class ParserTest < ASMREPL::Test
     @assembler = ASMREPL::Assembler.new
   end
 
+  def test_int_4
+    assert_round_trip "int 4"
+  end
+
+  def test_shl_1
+    assert_round_trip "shl rax, 1"
+  end
+
   def test_simple
     assert_round_trip "mov rax, 0xff"
     assert_round_trip "mov r8, 0xff"

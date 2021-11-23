@@ -7,7 +7,7 @@ rule
   command: instruction register on_comma int { result = new_command(val[0], val[1], val[3]) }
          | instruction register on_comma register { result = new_command(val[0], val[1], val[3]) }
          | instruction register on_comma memory { result = new_command(val[0], val[1], val[3]) }
-         | register { result = [:read, val[0]] }
+         | instruction int { result = new_tuple(val[0], val[1]) }
          ;
 
   instruction: on_instruction { result = [:instruction, val[0]] }
