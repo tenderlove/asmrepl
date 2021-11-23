@@ -16,14 +16,6 @@ module ASMREPL
       do_parse
     end
 
-    def register_or_insn str
-      if @instructions.include? str.upcase
-        [:instruction, Fisk::Instructions.const_get(str.upcase)]
-      else
-        [:register, Fisk::Registers.const_get(str.upcase)]
-      end
-    end
-
     def new_command mnemonic, arg1, arg2
       [:command, mnemonic, arg1, arg2]
     end
@@ -41,7 +33,13 @@ module ASMREPL
           when "byte"  then [:byte, ident]
           when "ptr"   then [:ptr, ident]
           else
-            m
+            if @instructions.include?(ident.upcase)
+              [:on_instruction, Fisk::Instructions.const_get(ident.upcase)]
+            elsif @registers.include?(ident.upcase)
+              [:on_register, Fisk::Registers.const_get(ident.upcase)]
+            else
+              m
+            end
           end
         in [:on_op, ident]
           return case ident
