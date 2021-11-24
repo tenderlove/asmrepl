@@ -4,12 +4,19 @@ This is a REPL for assembly language.
 
 ## Usage
 
-I haven't made a gem yet, so use it like this:
+Install the gem:
 
 ```
-$ bundle install
-$ sudo ruby -I lib:test bin/asmrepl
+$ gem install asmrepl
 ```
+
+Then start the repl like this:
+
+```
+$ asmrepl
+```
+
+If you're on macOS, you'll need to start the repl with `sudo`.
 
 When the REPL starts, it will display all register values and flags:
 
