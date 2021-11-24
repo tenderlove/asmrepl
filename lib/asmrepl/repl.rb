@@ -88,7 +88,13 @@ module ASMREPL
           in [:read, "cpu"]
             display_state state
           in [:read, reg]
-            puts sprintf("%#018x", state[reg])
+            val = state[reg]
+            if val
+              puts sprintf("%#018x", state[reg])
+            else
+              puts "Unknown command: "
+              puts "  " + text
+            end
           else
           end
         end
