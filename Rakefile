@@ -16,4 +16,8 @@ Rake::TestTask.new do |t|
   t.warning = true
 end
 
+task :autotest do
+  sh "fswatch -o lib test | xargs -n1 -I{} bundle exec rake test"
+end
+
 task :test => :compile

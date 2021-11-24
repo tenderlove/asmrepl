@@ -7,6 +7,10 @@ class ParserTest < ASMREPL::Test
     @assembler = ASMREPL::Assembler.new
   end
 
+  def test_and
+    assert_round_trip "and r9, 0xffff"
+  end
+
   def test_negative
     assert_round_trip "test qword ptr [r15], -9"
   end
