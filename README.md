@@ -2,8 +2,6 @@
 
 This is a REPL for assembly language.
 
-Currently it only works on macOS, but I'll make it work on Linux too.
-
 ## Usage
 
 I haven't made a gem yet, so use it like this:
