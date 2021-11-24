@@ -40,8 +40,13 @@ class ParserTest < ASMREPL::Test
   end
 
   def test_lea_rip
-    assert_round_trip "lea rax, [rip]"
-    assert_round_trip "lea rax, [rip + 9]"
+    if RUBY_PLATFORM =~ /darwin/
+      assert_round_trip "lea rax, [rip]"
+      assert_round_trip "lea rax, [rip + 9]"
+    else
+      assert_round_trip "lea rax, qword ptr [rip]"
+      assert_round_trip "lea rax, qword ptr [rip + 9]"
+    end
   end
 
   def test_push_reg
