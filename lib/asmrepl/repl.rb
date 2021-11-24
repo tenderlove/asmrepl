@@ -2,8 +2,12 @@ require "fiddle"
 require "fisk/helpers"
 require "crabstone"
 require "reline"
-#require "asmrepl/macos"
-require "asmrepl/linux"
+
+if RUBY_PLATFORM =~ /darwin/
+  require "asmrepl/macos"
+else
+  require "asmrepl/linux"
+end
 
 class Crabstone::Binding::Instruction
   class << self
@@ -20,8 +24,11 @@ module ASMREPL
   class REPL
     include Fiddle
 
-    #CFuncs = MacOS
-    CFuncs = Linux
+    if RUBY_PLATFORM =~ /darwin/
+      CFuncs = MacOS
+    else
+      CFuncs = Linux
+    end
 
     def initialize
       size = 1024 * 16 # 16k is enough for anyone!

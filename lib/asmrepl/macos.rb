@@ -43,6 +43,10 @@ module ASMREPL
       Fisk::Helpers::JITBuffer.new mmap_jit(size), size
     end
 
+    def self.traceme
+      raise unless ptrace(PT_TRACE_ME, 0, 0, 0).zero?
+    end
+
     class ThreadState
       fields = (<<-eostruct).scan(/uint64_t ([^;]*);/).flatten
 struct x86_thread_state64_t {
