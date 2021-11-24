@@ -2,7 +2,8 @@ require "fiddle"
 require "fisk/helpers"
 require "crabstone"
 require "reline"
-require "asmrepl/macos"
+#require "asmrepl/macos"
+require "asmrepl/linux"
 
 class Crabstone::Binding::Instruction
   class << self
@@ -19,7 +20,8 @@ module ASMREPL
   class REPL
     include Fiddle
 
-    CFuncs = MacOS
+    #CFuncs = MacOS
+    CFuncs = Linux
 
     def initialize
       size = 1024 * 16 # 16k is enough for anyone!
@@ -39,7 +41,7 @@ module ASMREPL
 
     def start
       pid = fork {
-        raise unless CFuncs.ptrace(CFuncs::PT_TRACE_ME, 0, 0, 0).zero?
+        CFuncs.traceme
         @buffer.to_function([], TYPE_INT).call
       }
 
