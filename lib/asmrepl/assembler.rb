@@ -21,7 +21,15 @@ module ASMREPL
       in [:command, [:instruction, insn], [:memory, a], [:register, b]]
         fisk.gen_with_insn insn, [a, b]
       in [:command, [:instruction, insn], [:int, n]]
-        fisk.gen_with_insn insn, [fisk.imm(n)]
+        forms = insn.forms
+
+        l = if forms.any? { |form| form.operands[0].type == n.to_s }
+          fisk.lit(n)
+        else
+          fisk.imm(n)
+        end
+        fisk.gen_with_insn insn, [l]
+
       in [:command, [:instruction, insn], [:register, n]]
         fisk.gen_with_insn insn, [n]
       in [:command, [:instruction, insn], [:memory, n]]

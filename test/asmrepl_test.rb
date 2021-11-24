@@ -7,6 +7,10 @@ class ParserTest < ASMREPL::Test
     @assembler = ASMREPL::Assembler.new
   end
 
+  def test_int3
+    assert_round_trip "int3 "
+  end
+
   def test_and
     assert_round_trip "and r9, 0xffff"
   end

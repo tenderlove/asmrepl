@@ -41,6 +41,8 @@ module ASMREPL
         [:ptr, @scanner.matched]
       elsif @scanner.scan(/rip/i)
         [:on_rip, @scanner.matched]
+      elsif @scanner.scan(/int/i)
+        [:on_instruction, Fisk::Instructions::INT]
       elsif @scanner.scan(/movabs/i)
         [:on_instruction, Fisk::Instructions::MOV]
       elsif @scanner.scan(/\w+/)
