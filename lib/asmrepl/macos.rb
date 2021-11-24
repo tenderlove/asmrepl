@@ -159,7 +159,9 @@ struct x86_thread_state64_t {
         @pid = pid
         @target = Fiddle::Pointer.malloc(Fiddle::SIZEOF_VOIDP)
 
-        raise unless MacOS.task_for_pid(MacOS.mach_task_self, pid, @target.ref).zero?
+        unless MacOS.task_for_pid(MacOS.mach_task_self, pid, @target.ref).zero?
+          raise "Couldn't get task pid. Did you run with sudo?"
+        end
 
         @thread_list = Fiddle::Pointer.malloc(Fiddle::SIZEOF_VOIDP)
         thread_count = Fiddle::Pointer.malloc(Fiddle::SIZEOF_VOIDP)

@@ -13,6 +13,9 @@ Gem::Specification.new do |s|
   s.test_files  = s.files.grep(%r{^test/})
   s.homepage    = "https://github.com/tenderlove/asmrepl"
   s.license     = "Apache-2.0"
+  s.bindir      = "bin"
+
+  s.executables << "asmrepl"
 
   s.add_development_dependency 'minitest', '~> 5.14'
   s.add_development_dependency 'crabstone', '~> 4.0'
