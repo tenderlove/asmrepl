@@ -55,36 +55,40 @@ module ASMREPL
         pos = (state.rip - @buffer.memory.to_i)
         @buffer.seek pos
         use_history = true
-        loop do
-          cmd = nil
-          text = Reline.readmultiline(">> ", use_history) do |multiline_input|
-            if multiline_input =~ /\A\s*(\w+)\s*\Z/
-              register = $1
-              cmd = [:read, register]
-            else
-              cmd = :run
+        begin
+          loop do
+            cmd = nil
+            text = Reline.readmultiline(">> ", use_history) do |multiline_input|
+              if multiline_input =~ /\A\s*(\w+)\s*\Z/
+                register = $1
+                cmd = [:read, register]
+              else
+                cmd = :run
+              end
+              true
             end
-            true
-          end
 
-          case cmd
-          in :run
-            break if text.chomp.empty?
-            binary = @assembler.assemble @parser.parse text.chomp
-            binary.bytes.each { |byte| @buffer.putc byte }
-            break
-          in [:read, "cpu"]
-            display_state state
-          in [:read, reg]
-            val = state[reg]
-            if val
-              puts sprintf("%#018x", state[reg])
+            case cmd
+            in :run
+              break if text.chomp.empty?
+              binary = @assembler.assemble @parser.parse text.chomp
+              binary.bytes.each { |byte| @buffer.putc byte }
+              break
+            in [:read, "cpu"]
+              display_state state
+            in [:read, reg]
+              val = state[reg]
+              if val
+                puts sprintf("%#018x", state[reg])
+              else
+                puts "Unknown command: "
+                puts "  " + text
+              end
             else
-              puts "Unknown command: "
-              puts "  " + text
             end
-          else
           end
+        rescue Interrupt
+          exit 0
         end
         tracer.continue
       end
