@@ -26,6 +26,7 @@ module ASMREPL
     make_function "task_for_pid", [TYPE_VOIDP, TYPE_INT, TYPE_VOIDP], TYPE_INT
     make_function "task_threads", [TYPE_VOIDP, TYPE_VOIDP, TYPE_VOIDP], TYPE_INT
     make_function "thread_get_state", [TYPE_VOIDP, TYPE_INT, TYPE_VOIDP, TYPE_VOIDP], TYPE_INT
+    make_function "thread_set_state", [TYPE_VOIDP, TYPE_INT, TYPE_VOIDP, TYPE_INT], TYPE_INT
     make_function "mmap", [TYPE_VOIDP,
                            TYPE_SIZE_T,
                            TYPE_INT,
@@ -77,6 +78,10 @@ struct x86_thread_state64_t {
         define_method(field) do
           to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T].unpack1("l!")
         end
+
+        define_method("#{field}=") do |v|
+          to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T] = [v].pack("l!")
+        end
       end
 
       define_singleton_method(:sizeof) do
@@ -87,6 +92,12 @@ struct x86_thread_state64_t {
         idx = fields.index(name)
         return unless idx
         to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T].unpack1("l!")
+      end
+
+      def []= name, val
+        idx = fields.index(name)
+        return unless idx
+        to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T] = [val].pack("l!")
       end
 
       def self.malloc
@@ -193,6 +204,17 @@ struct x86_thread_state64_t {
         raise unless MacOS.thread_get_state(@thread, x86_THREAD_STATE64, state, state_count).zero?
 
         state
+      end
+
+      def state= new_state
+        # I can't remember what header I found this in, but it's from a macOS header
+        # :sweat-smile:
+        x86_THREAD_STATE64_COUNT = ThreadState.sizeof / Fiddle::SIZEOF_INT
+
+        # Same here
+        x86_THREAD_STATE64 = 4
+
+        raise unless MacOS.thread_set_state(@thread, x86_THREAD_STATE64, new_state, x86_THREAD_STATE64_COUNT).zero?
       end
 
       def continue
