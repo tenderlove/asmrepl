@@ -27,11 +27,38 @@ module ASMREPL
     end
 
     def display_state state
-      puts " CPU STATE ".center(48, "=")
+      puts bold(" CPU STATE ".center(48, "="))
       puts state
       puts
       puts "FLAGS: #{state.flags.inspect}"
       puts
+    end
+
+    def display_state_change last_state, state
+      puts bold(" REGISTER CHANGES ".center(48, "="))
+      show_flags = false
+
+      state.fields.each do |field|
+        next if field == "rip"
+
+        if last_state[field] != state[field]
+          print "#{field.ljust(6)}  "
+          print sprintf("%#018x", last_state[field])
+          print " => "
+          puts bold(sprintf("%#018x", state[field]))
+        end
+      end
+
+      if last_state.flags != state.flags
+        puts
+        puts "FLAGS: #{state.flags.inspect}"
+      end
+
+      puts
+    end
+
+    def bold string
+      "\e[1m#{string}\e[0m"
     end
 
     def start
@@ -42,13 +69,18 @@ module ASMREPL
 
       tracer = CFuncs::Tracer.new pid
       should_cpu = true
+      last_state = nil
+
       while tracer.wait
         state = tracer.state
 
         # Show CPU state once on boot
-        if should_cpu
+        if last_state.nil?
           display_state state
-          should_cpu = false
+          last_state = state
+        else
+          display_state_change last_state, state
+          last_state = state
         end
 
         # Move the JIT buffer to the current instruction pointer
@@ -58,7 +90,8 @@ module ASMREPL
         begin
           loop do
             cmd = nil
-            text = Reline.readmultiline(">> ", use_history) do |multiline_input|
+            prompt = sprintf("(rip %#018x)> ", state.rip)
+            text = Reline.readmultiline(prompt, use_history) do |multiline_input|
               if multiline_input =~ /\A\s*(\w+)\s*\Z/
                 register = $1
                 cmd = [:read, register]
@@ -72,13 +105,20 @@ module ASMREPL
             in :run
               break if text.chomp.empty?
               begin
-                parserResult = @parser.parse text.chomp
+                parser_result = @parser.parse text.chomp
               rescue
                 puts "Invalid intruction"
                 next
               end
-              binary = @assembler.assemble parserResult
-              binary.bytes.each { |byte| @buffer.putc byte }
+
+              begin
+                binary = @assembler.assemble parser_result
+                binary.bytes.each { |byte| @buffer.putc byte }
+              rescue Fisk::Errors::InvalidInstructionError => e
+                # Print an error message when the instruction is invalid
+                puts e.message
+                next
+              end
               break
             in [:read, "cpu"]
               display_state state
