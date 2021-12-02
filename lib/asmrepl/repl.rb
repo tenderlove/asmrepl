@@ -71,7 +71,13 @@ module ASMREPL
             case cmd
             in :run
               break if text.chomp.empty?
-              binary = @assembler.assemble @parser.parse text.chomp
+              begin
+                parserResult = @parser.parse text.chomp
+              rescue
+                puts "Invalid intruction"
+                next
+              end
+              binary = @assembler.assemble parserResult
               binary.bytes.each { |byte| @buffer.putc byte }
               break
             in [:read, "cpu"]
@@ -88,6 +94,7 @@ module ASMREPL
             end
           end
         rescue Interrupt
+          puts ""
           exit 0
         end
         tracer.continue
