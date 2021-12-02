@@ -2,11 +2,6 @@
 
 This is a REPL for assembly language.
 
-## Linux requirements
-```
-$ sudo apt-get install libcapstone-dev
-```
-
 ## Usage
 
 Install the gem:
