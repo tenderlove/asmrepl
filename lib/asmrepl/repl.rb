@@ -9,6 +9,8 @@ else
 end
 
 module ASMREPL
+  MAXINT = 0xFFFFFFFFFFFFFFFF
+
   class REPL
     include Fiddle
 
@@ -43,9 +45,9 @@ module ASMREPL
 
         if last_state[field] != state[field]
           print "#{field.ljust(6)}  "
-          print sprintf("%#018x", last_state[field])
+          print sprintf("%#018x", last_state[field] & MAXINT)
           print " => "
-          puts bold(sprintf("%#018x", state[field]))
+          puts bold(sprintf("%#018x", state[field] & MAXINT))
         end
       end
 

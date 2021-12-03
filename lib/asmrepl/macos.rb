@@ -117,15 +117,15 @@ struct x86_thread_state64_t {
       def to_s
         buf = ""
         fields.first(8).zip(fields.drop(8).first(8)).each do |l, r|
-          buf << "#{l.ljust(3)}  #{sprintf("%#018x", send(l))}"
+          buf << "#{l.ljust(3)}  #{sprintf("%#018x", self[l] & MAXINT)}"
           buf << "  "
-          buf << "#{r.ljust(3)}  #{sprintf("%#018x", send(r))}\n"
+          buf << "#{r.ljust(3)}  #{sprintf("%#018x", self[r] & MAXINT)}\n"
         end
 
         buf << "\n"
 
         fields.drop(16).each do |reg|
-          buf << "#{reg.ljust(6)}  #{sprintf("%#018x", send(reg))}\n"
+          buf << "#{reg.ljust(6)}  #{sprintf("%#018x", self[reg] & MAXINT)}\n"
         end
         buf
       end
@@ -187,23 +187,27 @@ struct x86_thread_state64_t {
       end
 
       def state
-        # Probably should use this for something
-        # count = thread_count[0]
+        3.times do
+          # Probably should use this for something
+          # count = thread_count[0]
 
-        # I can't remember what header I found this in, but it's from a macOS header
-        # :sweat-smile:
-        x86_THREAD_STATE64_COUNT = ThreadState.sizeof / Fiddle::SIZEOF_INT
+          # I can't remember what header I found this in, but it's from a macOS header
+          # :sweat-smile:
+          x86_THREAD_STATE64_COUNT = ThreadState.sizeof / Fiddle::SIZEOF_INT
 
-        # Same here
-        x86_THREAD_STATE64 = 4
+          # Same here
+          x86_THREAD_STATE64 = 4
 
-        state_count = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT64_T)
-        state_count[0, Fiddle::SIZEOF_INT64_T] = [x86_THREAD_STATE64_COUNT].pack("l!")
+          state_count = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT64_T)
+          state_count[0, Fiddle::SIZEOF_INT64_T] = [x86_THREAD_STATE64_COUNT].pack("l!")
 
-        state = ThreadState.malloc
-        raise unless MacOS.thread_get_state(@thread, x86_THREAD_STATE64, state, state_count).zero?
+          state = ThreadState.malloc
+          if MacOS.thread_get_state(@thread, x86_THREAD_STATE64, state, state_count).zero?
+            return state
+          end
+        end
 
-        state
+        raise "Couldn't get CPU state"
       end
 
       def state= new_state
