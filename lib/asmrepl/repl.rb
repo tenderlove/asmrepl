@@ -74,7 +74,7 @@ module ASMREPL
               begin
                 parserResult = @parser.parse text.chomp
               rescue
-                puts "Invalid intruction"
+                puts "Invalid instruction"
                 next
               end
               binary = @assembler.assemble parserResult
