@@ -107,7 +107,7 @@ module ASMREPL
               begin
                 parser_result = @parser.parse text.chomp
               rescue
-                puts "Invalid intruction"
+                puts "Invalid instruction"
                 next
               end
 
