@@ -11,7 +11,11 @@ module ASMREPL
         l = if possibles.any? { |form| form.operands[1].type == n.to_s }
           fisk.lit(n)
         else
-          fisk.imm(n)
+          if r.size == 64
+            fisk.imm32(n)
+          else
+            fisk.imm(n)
+          end
         end
         fisk.gen_with_insn insn, [r, l]
       in [:command, [:instruction, insn], [:register, r], [:register, r2]]

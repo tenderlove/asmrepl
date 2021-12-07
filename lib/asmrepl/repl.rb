@@ -9,6 +9,8 @@ else
 end
 
 module ASMREPL
+  MAXINT = 0xFFFFFFFFFFFFFFFF
+
   class REPL
     include Fiddle
 
@@ -43,9 +45,9 @@ module ASMREPL
 
         if last_state[field] != state[field]
           print "#{field.ljust(6)}  "
-          print sprintf("%#018x", last_state[field])
+          print sprintf("%#018x", last_state[field] & MAXINT)
           print " => "
-          puts bold(sprintf("%#018x", state[field]))
+          puts bold(sprintf("%#018x", state[field] & MAXINT))
         end
       end
 
@@ -83,18 +85,21 @@ module ASMREPL
           last_state = state
         end
 
-        # Move the JIT buffer to the current instruction pointer
-        pos = (state.rip - @buffer.memory.to_i)
-        @buffer.seek pos
         use_history = true
         begin
           loop do
             cmd = nil
             prompt = sprintf("(rip %#018x)> ", state.rip)
             text = Reline.readmultiline(prompt, use_history) do |multiline_input|
-              if multiline_input =~ /\A\s*(\w+)\s*\Z/
+              case multiline_input
+              when /\Adisasm\Z/
+                cmd = :disasm
+              when /\A\s*(\w+)\s*\Z/
                 register = $1
                 cmd = [:read, register]
+              when /\A\s*(\w+)\s*=\s*(\d+)\Z/
+                register = $1
+                cmd = [:write, register, $2.to_i]
               else
                 cmd = :run
               end
@@ -102,6 +107,15 @@ module ASMREPL
             end
 
             case cmd
+            in :disasm
+              # disassembles the JIT buffer.  This is just for development,
+              # I don't want to make a hard dependency on crabstone right now.
+              # If you want to use this, install crabstone
+              begin
+                require "asmrepl/disasm"
+                ASMREPL::Disasm.disasm @buffer
+              rescue
+              end
             in :run
               break if text.chomp.empty?
               begin
@@ -113,13 +127,23 @@ module ASMREPL
 
               begin
                 binary = @assembler.assemble parser_result
+
+                # Move the JIT buffer to the current instruction pointer, but
+                # rewind RIP so that we write over the int3
+                pos = (state.rip - @buffer.memory.to_i - 1)
+                @buffer.seek pos
                 binary.bytes.each { |byte| @buffer.putc byte }
+                state.rip -= 1
+                tracer.state = state
               rescue Fisk::Errors::InvalidInstructionError => e
                 # Print an error message when the instruction is invalid
                 puts e.message
                 next
               end
               break
+            in [:write, reg, val]
+              state[reg] = val
+              tracer.state = state
             in [:read, "cpu"]
               display_state state
             in [:read, reg]

@@ -1,4 +1,5 @@
 require "fisk/helpers"
+require "asmrepl/thread_state"
 
 module ASMREPL
   module MacOS
@@ -26,6 +27,7 @@ module ASMREPL
     make_function "task_for_pid", [TYPE_VOIDP, TYPE_INT, TYPE_VOIDP], TYPE_INT
     make_function "task_threads", [TYPE_VOIDP, TYPE_VOIDP, TYPE_VOIDP], TYPE_INT
     make_function "thread_get_state", [TYPE_VOIDP, TYPE_INT, TYPE_VOIDP, TYPE_VOIDP], TYPE_INT
+    make_function "thread_set_state", [TYPE_VOIDP, TYPE_INT, TYPE_VOIDP, TYPE_INT], TYPE_INT
     make_function "mmap", [TYPE_VOIDP,
                            TYPE_SIZE_T,
                            TYPE_INT,
@@ -47,8 +49,7 @@ module ASMREPL
       raise unless ptrace(PT_TRACE_ME, 0, 0, 0).zero?
     end
 
-    class ThreadState
-      fields = (<<-eostruct).scan(/uint64_t ([^;]*);/).flatten
+    fields = (<<-eostruct).scan(/uint64_t ([^;]*);/).flatten
 struct x86_thread_state64_t {
   uint64_t rax;
   uint64_t rbx;
@@ -72,83 +73,12 @@ struct x86_thread_state64_t {
   uint64_t fs;
   uint64_t gs;
 }
-      eostruct
-      fields.each_with_index do |field, i|
-        define_method(field) do
-          to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T].unpack1("l!")
-        end
-      end
+    eostruct
 
-      define_singleton_method(:sizeof) do
-        fields.length * Fiddle::SIZEOF_INT64_T
-      end
+    class ThreadState < ASMREPL::ThreadState.build(fields)
+      private
 
-      def [] name
-        idx = fields.index(name)
-        return unless idx
-        to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T].unpack1("l!")
-      end
-
-      def self.malloc
-        new Fiddle::Pointer.malloc sizeof
-      end
-
-      attr_reader :to_ptr
-
-      def initialize buffer
-        @to_ptr = buffer
-      end
-
-      define_method(:fields) do
-        fields
-      end
-
-      def to_s
-        buf = ""
-        fields.first(8).zip(fields.drop(8).first(8)).each do |l, r|
-          buf << "#{l.ljust(3)}  #{sprintf("%#018x", send(l))}"
-          buf << "  "
-          buf << "#{r.ljust(3)}  #{sprintf("%#018x", send(r))}\n"
-        end
-
-        buf << "\n"
-
-        fields.drop(16).each do |reg|
-          buf << "#{reg.ljust(6)}  #{sprintf("%#018x", send(reg))}\n"
-        end
-        buf
-      end
-
-      FLAGS = [
-        ['CF', 'Carry Flag'],
-        [nil, 'Reserved'],
-        ['PF', 'Parity Flag'],
-        [nil, 'Reserved'],
-        ['AF', 'Adjust Flag'],
-        [nil, 'Reserved'],
-        ['ZF', 'Zero Flag'],
-        ['SF', 'Sign Flag'],
-        ['TF', 'Trap Flag'],
-        ['IF', 'Interrupt Enable Flag'],
-        ['DF', 'Direction Flag'],
-        ['OF', 'Overflow Flag'],
-        ['IOPL_H', 'I/O privilege level High bit'],
-        ['IOPL_L', 'I/O privilege level Low bit'],
-        ['NT', 'Nested Task Flag'],
-        [nil, 'Reserved'],
-      ]
-
-      def flags
-        flags = rflags
-        f = []
-        FLAGS.each do |abbrv, _|
-          if abbrv && flags & 1 == 1
-            f << abbrv
-          end
-          flags >>= 1
-        end
-        f
-      end
+      def read_flags; rflags; end
     end
 
     PT_TRACE_ME    = 0
@@ -176,9 +106,30 @@ struct x86_thread_state64_t {
       end
 
       def state
-        # Probably should use this for something
-        # count = thread_count[0]
+        3.times do
+          # Probably should use this for something
+          # count = thread_count[0]
 
+          # I can't remember what header I found this in, but it's from a macOS header
+          # :sweat-smile:
+          x86_THREAD_STATE64_COUNT = ThreadState.sizeof / Fiddle::SIZEOF_INT
+
+          # Same here
+          x86_THREAD_STATE64 = 4
+
+          state_count = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT64_T)
+          state_count[0, Fiddle::SIZEOF_INT64_T] = [x86_THREAD_STATE64_COUNT].pack("l!")
+
+          state = ThreadState.malloc
+          if MacOS.thread_get_state(@thread, x86_THREAD_STATE64, state, state_count).zero?
+            return state
+          end
+        end
+
+        raise "Couldn't get CPU state"
+      end
+
+      def state= new_state
         # I can't remember what header I found this in, but it's from a macOS header
         # :sweat-smile:
         x86_THREAD_STATE64_COUNT = ThreadState.sizeof / Fiddle::SIZEOF_INT
@@ -186,13 +137,7 @@ struct x86_thread_state64_t {
         # Same here
         x86_THREAD_STATE64 = 4
 
-        state_count = Fiddle::Pointer.malloc(Fiddle::SIZEOF_INT64_T)
-        state_count[0, Fiddle::SIZEOF_INT64_T] = [x86_THREAD_STATE64_COUNT].pack("l!")
-
-        state = ThreadState.malloc
-        raise unless MacOS.thread_get_state(@thread, x86_THREAD_STATE64, state, state_count).zero?
-
-        state
+        raise unless MacOS.thread_set_state(@thread, x86_THREAD_STATE64, new_state, x86_THREAD_STATE64_COUNT).zero?
       end
 
       def continue
