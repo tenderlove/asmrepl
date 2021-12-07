@@ -1,4 +1,5 @@
 require "fisk/helpers"
+require "asmrepl/thread_state"
 
 module ASMREPL
   module MacOS
@@ -48,8 +49,7 @@ module ASMREPL
       raise unless ptrace(PT_TRACE_ME, 0, 0, 0).zero?
     end
 
-    class ThreadState
-      fields = (<<-eostruct).scan(/uint64_t ([^;]*);/).flatten
+    fields = (<<-eostruct).scan(/uint64_t ([^;]*);/).flatten
 struct x86_thread_state64_t {
   uint64_t rax;
   uint64_t rbx;
@@ -73,93 +73,12 @@ struct x86_thread_state64_t {
   uint64_t fs;
   uint64_t gs;
 }
-      eostruct
-      fields.each_with_index do |field, i|
-        define_method(field) do
-          to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T].unpack1("l!")
-        end
+    eostruct
 
-        define_method("#{field}=") do |v|
-          to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T] = [v].pack("l!")
-        end
-      end
+    class ThreadState < ASMREPL::ThreadState.build(fields)
+      private
 
-      define_singleton_method(:sizeof) do
-        fields.length * Fiddle::SIZEOF_INT64_T
-      end
-
-      def [] name
-        idx = fields.index(name)
-        return unless idx
-        to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T].unpack1("l!")
-      end
-
-      def []= name, val
-        idx = fields.index(name)
-        return unless idx
-        to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T] = [val].pack("l!")
-      end
-
-      def self.malloc
-        new Fiddle::Pointer.malloc sizeof
-      end
-
-      attr_reader :to_ptr
-
-      def initialize buffer
-        @to_ptr = buffer
-      end
-
-      define_method(:fields) do
-        fields
-      end
-
-      def to_s
-        buf = ""
-        fields.first(8).zip(fields.drop(8).first(8)).each do |l, r|
-          buf << "#{l.ljust(3)}  #{sprintf("%#018x", self[l] & MAXINT)}"
-          buf << "  "
-          buf << "#{r.ljust(3)}  #{sprintf("%#018x", self[r] & MAXINT)}\n"
-        end
-
-        buf << "\n"
-
-        fields.drop(16).each do |reg|
-          buf << "#{reg.ljust(6)}  #{sprintf("%#018x", self[reg] & MAXINT)}\n"
-        end
-        buf
-      end
-
-      FLAGS = [
-        ['CF', 'Carry Flag'],
-        [nil, 'Reserved'],
-        ['PF', 'Parity Flag'],
-        [nil, 'Reserved'],
-        ['AF', 'Adjust Flag'],
-        [nil, 'Reserved'],
-        ['ZF', 'Zero Flag'],
-        ['SF', 'Sign Flag'],
-        ['TF', 'Trap Flag'],
-        ['IF', 'Interrupt Enable Flag'],
-        ['DF', 'Direction Flag'],
-        ['OF', 'Overflow Flag'],
-        ['IOPL_H', 'I/O privilege level High bit'],
-        ['IOPL_L', 'I/O privilege level Low bit'],
-        ['NT', 'Nested Task Flag'],
-        [nil, 'Reserved'],
-      ]
-
-      def flags
-        flags = rflags
-        f = []
-        FLAGS.each do |abbrv, _|
-          if abbrv && flags & 1 == 1
-            f << abbrv
-          end
-          flags >>= 1
-        end
-        f
-      end
+      def read_flags; rflags; end
     end
 
     PT_TRACE_ME    = 0
