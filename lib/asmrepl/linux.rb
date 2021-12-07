@@ -44,6 +44,7 @@ module ASMREPL
 
     # x86_64-linux-gnu/sys/ptrace.h
     PTRACE_GETREGS = 12
+    PTRACE_SETREGS = 13
 
     def self.traceme
       raise unless ptrace(PTRACE_TRACEME, 0, 0, 0).zero?
@@ -86,6 +87,10 @@ struct user_regs_struct
         define_method(field) do
           to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T].unpack1("l!")
         end
+
+        define_method("#{field}=") do |v|
+          to_ptr[Fiddle::SIZEOF_INT64_T * i, Fiddle::SIZEOF_INT64_T] = [v].pack("l!")
+        end
       end
 
       define_singleton_method(:sizeof) do
@@ -96,6 +101,12 @@ struct user_regs_struct
         idx = fields.index(name)
         return unless idx
         to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T].unpack1("l!")
+      end
+
+      def []= name, val
+        idx = fields.index(name)
+        return unless idx
+        to_ptr[Fiddle::SIZEOF_INT64_T * idx, Fiddle::SIZEOF_INT64_T] = [val].pack("l!")
       end
 
       def self.malloc
@@ -172,6 +183,12 @@ struct user_regs_struct
       def state
         state = ThreadState.malloc
         raise unless Linux.ptrace(PTRACE_GETREGS, @pid, 0, state).zero?
+
+        state
+      end
+
+      def state= state
+        raise unless Linux.ptrace(PTRACE_SETREGS, @pid, 0, state).zero?
 
         state
       end
