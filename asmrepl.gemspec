@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'crabstone', '~> 4.0'
   s.add_development_dependency 'rake', '~> 13.0'
   s.add_dependency 'fisk', '~> 2.3.1'
+  s.add_dependency 'racc', '~> 1.7.3'
 end
